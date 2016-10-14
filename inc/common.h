@@ -28,5 +28,6 @@
 #define REVISION_VERSION 1
 
 typedef unsigned char byte;
+typedef unsigned int u_int;
 
 #endif /* _COMMON_H_ */

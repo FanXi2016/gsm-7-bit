@@ -12,14 +12,22 @@
 *
 ****************************************************************************/
 
-#include "common.h"
-#include "convert_char_2_hex.h"
-#include "convert_iso8859_2_gsm7.h"
-#include "gsm7_packing_unpacking.h"
+#include "../inc/common.h"
+//#include "convert_char_2_hex.h"
+//#include "convert_iso8859_2_gsm7.h"
+//#include "gsm7_packing_unpacking.h"
 
 /* Only to Debug. */
 #define SOURCE_STRING "48656C6C6F2C576F726C6421"    /* Hello,World! */
 //#define SOURCE_STRING "4769744875622069732061207765622D626173656420476974207265706F7369746F727920686F7374696E6720736572766963652E"    /* GitHub is a web-based Git repository hosting service. */
+
+struct command_param_info
+{
+	u_int is_string;
+	byte *string;
+};
+
+struct command_param_info g_command_param = {0};
 
 /*===========================================================================
   Function:  version
@@ -99,28 +107,45 @@ static int usage()
   None.
 */
 /*=========================================================================*/
-static int commandline(int argc, char **argv)
+static int commandline(struct command_param_info *info, int argc, char **argv)
 {
-/*
-    while (argc > 0) {
-        
-    }
-*/
+
+	if (!info) {
+		printf("Error, command param info pointer is NULL.");
+		return FAIL;
+	}
+
+	/* Detect param number. */
     if (argc == 0) {
         return usage();
     }
 
-    if(!strcmp(argv[0], "--help") || !strcmp(argv[0], "help")) {
+	if(!strcmp(argv[0], "-s") || !strcmp(argv[0], "--string")) {
+		info->is_string = 1;
+
+		if (argc == 2 && (argv + 1) != NULL) {
+			info->string = *(argv + 1);
+		} else {
+			goto err;
+		}
+	} else if(!strcmp(argv[0], "--help") || !strcmp(argv[0], "help")) {
         help();
         return SUCCESS;
-    }
-
-    if(!strcmp(argv[0], "--version") || !strcmp(argv[0], "version")) {
-        vesrion(stdout);
+    } else if(!strcmp(argv[0], "--version") || !strcmp(argv[0], "version")) {
+        version(stdout);
         return SUCCESS;
-    }
+    } else {
+		goto err;
+	}
 
+#ifdef DEBUG
+	printf("Debug, is_string=%d, string is %s.\n", info->is_string, info->string);
+#endif
     return SUCCESS;
+
+err:
+	usage();
+	return FAIL;
 }
 
 /*===========================================================================
@@ -139,28 +164,36 @@ static int commandline(int argc, char **argv)
 /*=========================================================================*/
 int main(int argc, char **argv)
 {
-    char *src_data = SOURCE_STRING;
+	struct command_param_info *param_info = &g_command_param;
+    //char *src_data = SOURCE_STRING;
     char *det_data = NULL;
     byte *gsm7_data = NULL;
     byte *packed_data = NULL;
     byte *unpacked_data = NULL;
     int gsm7_char_num = 0;
-    int str_len = 0;
     int rc = SUCCESS;
 
     /* Prase commandline param. */
-    rc = commandline(argc - 1, argv + 1);
+    rc = commandline(param_info, argc - 1, argv + 1);
     if (rc != SUCCESS) {
-        printf("Error, Fail to prase command line.\n");
+        printf("Error, fail to prase command line.\n");
         return FAIL;
     }
 
-    str_len = strlen(SOURCE_STRING);
-    if (str_len <= 0) {
-        printf("Error, String len is zero.\n");
-        return FAIL;
-    }
+	if (param_info->is_string == 1) {
+		u_int str_len = 0;
 
+		str_len = strlen(param_info->string);
+		if (str_len <= 0) {
+			printf("Error, string len is zero.\n");
+			return FAIL;
+		}
+
+		printf("Debug, string len is %d.\n", str_len);
+		
+	}
+
+#if 0
     det_data = (char *)malloc(str_len * sizeof(char));
     memset(det_data, '\0', str_len);
 
@@ -200,5 +233,6 @@ int main(int argc, char **argv)
     free(unpacked_data);
     free(gsm7_data);
     free(det_data);
+#endif
     return SUCCESS;
 }
