@@ -77,3 +77,45 @@ int convert_char_to_hex(char *src_data, int src_len, char *det_data, int det_len
     printf("Info, Convert data is: %s.\n", det_data);
     return SUCCESS;
 }
+
+/*===========================================================================
+  Function:  convert_string_to_hex
+===========================================================================*/
+/*!
+@brief
+  None.
+
+@parameters
+  None.
+
+@return
+  None.
+*/
+/*=========================================================================*/
+int convert_string_to_hex(byte *src_data, u_int src_len, byte *det_data, u_int det_len)
+{
+    if (!src_data || !det_data) {
+        printf("Error, The source data and detect data pointer is NULL.\n");
+        return FAIL;
+    }
+
+	if (det_len >= src_len) {
+		memcpy(det_data, src_data, src_len);
+	} else {
+		printf("Error, source data is too length.\n");
+		return FAIL;
+	}
+
+#ifdef DEBUG
+    printf("Debug, src_data:%s\n       det_data:%s\n", src_data, det_data);
+    printf("\n");
+
+	int index = 0;
+	for (index = 0; index < det_len; index++) {
+		printf("Debug, det_data[%d]=0x%x.\n", index, *(det_data + index));
+	}
+    printf("\n");
+#endif
+
+    return SUCCESS;
+}

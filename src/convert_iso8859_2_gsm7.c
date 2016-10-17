@@ -55,7 +55,7 @@ static const char iso8859_to_gsm7[] =
   None.
 */
 /*=========================================================================*/
-int convert_iso8859_to_gsm7(char *iso8859_data, int iso8859_len, char *gsm7_data, int gsm7_len, int *convert_char_num)
+int convert_iso8859_to_gsm7(byte *iso8859_data, u_int iso8859_len, byte *gsm7_data, u_int gsm7_len, u_int *convert_char_num)
 {
     char gsm7_char = 0;
     int iso8859_idx = 0;
@@ -90,8 +90,9 @@ int convert_iso8859_to_gsm7(char *iso8859_data, int iso8859_len, char *gsm7_data
 #ifdef DEBUG
     int index = 0;
     for (index = 0; index < *convert_char_num; index++) {
-        printf("DEBUG, gsm7_data[%d]=0x%x.\n", index, *(gsm7_data + index));
+        printf("Debug, gsm7_data[%d]=0x%x.\n", index, *(gsm7_data + index));
     }
+    printf("\n");
 #endif
     return SUCCESS;
 }

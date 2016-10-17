@@ -16,7 +16,7 @@
 
 #include "common.h"
 
-int pack_gsm7_string(byte *packed_str, int size_packed_str, byte *gsm7_str, int size_gsm7_str);
+int pack_gsm7_string(byte *packed_str, u_int size_packed_str, byte *gsm7_str, u_int size_gsm7_str);
 int unpack_gsm7_string(byte *unpacked_str, int size_unpacked_str, byte *gsm7_str, int size_gsm7_str);
 
 #endif /* _CONVERT_ISO8859_2_GSM7_H_ */

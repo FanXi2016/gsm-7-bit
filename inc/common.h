@@ -18,7 +18,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-//#define DEBUG    /* The marco to open debug information. */
+#define DEBUG    /* The marco to open debug information. */
 #define SUCCESS 0
 #define FAIL -1
 

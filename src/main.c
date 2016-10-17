@@ -12,14 +12,10 @@
 *
 ****************************************************************************/
 
-#include "../inc/common.h"
-//#include "convert_char_2_hex.h"
-//#include "convert_iso8859_2_gsm7.h"
-//#include "gsm7_packing_unpacking.h"
-
-/* Only to Debug. */
-#define SOURCE_STRING "48656C6C6F2C576F726C6421"    /* Hello,World! */
-//#define SOURCE_STRING "4769744875622069732061207765622D626173656420476974207265706F7369746F727920686F7374696E6720736572766963652E"    /* GitHub is a web-based Git repository hosting service. */
+#include "common.h"
+#include "convert_char_2_hex.h"
+#include "convert_iso8859_2_gsm7.h"
+#include "gsm7_packing_unpacking.h"
 
 struct command_param_info
 {
@@ -68,8 +64,9 @@ static void help()
     version(stderr);
     fprintf(stderr,
         "\n"
-        " --help                        - show this help message\n"
-        " --version                     - show version num\n"
+        " -s, --string <input string>           - convert input string to packed gsm-7bit code\n"
+        "     --help                            - show this help message\n"
+        "     --version                         - show version num\n"
         );
 }
 
@@ -139,7 +136,8 @@ static int commandline(struct command_param_info *info, int argc, char **argv)
 	}
 
 #ifdef DEBUG
-	printf("Debug, is_string=%d, string is %s.\n", info->is_string, info->string);
+	printf("Debug, is_string=%d, string is: %s\n", info->is_string, info->string);
+    printf("\n");
 #endif
     return SUCCESS;
 
@@ -165,12 +163,11 @@ err:
 int main(int argc, char **argv)
 {
 	struct command_param_info *param_info = &g_command_param;
-    //char *src_data = SOURCE_STRING;
-    char *det_data = NULL;
-    byte *gsm7_data = NULL;
-    byte *packed_data = NULL;
-    byte *unpacked_data = NULL;
-    int gsm7_char_num = 0;
+	u_int str_len = 0;
+	byte *hex_data = NULL;
+	byte *gsm7_data = NULL;
+	byte *packed_data = NULL;
+	u_int gsm7_char_num = 0;
     int rc = SUCCESS;
 
     /* Prase commandline param. */
@@ -181,7 +178,6 @@ int main(int argc, char **argv)
     }
 
 	if (param_info->is_string == 1) {
-		u_int str_len = 0;
 
 		str_len = strlen(param_info->string);
 		if (str_len <= 0) {
@@ -189,50 +185,42 @@ int main(int argc, char **argv)
 			return FAIL;
 		}
 
-		printf("Debug, string len is %d.\n", str_len);
-		
+		hex_data = (byte *)malloc(str_len * sizeof(byte));
+		memset(hex_data, '\0', str_len);
+		rc = convert_string_to_hex(param_info->string, str_len, hex_data, str_len);
+		if (rc != SUCCESS) {
+			printf("Error, fail to convert string to hex.\n");
+			goto err_hex_data;
+		}
+
+		gsm7_data = (byte *)malloc(str_len * sizeof(byte));
+		memset(gsm7_data, '\0', str_len);
+		/* Convert ISO8859-1/ASCII code to Gsm 7-bit code. */
+		rc = convert_iso8859_to_gsm7(hex_data, str_len, gsm7_data, str_len, &gsm7_char_num);
+		if (rc != SUCCESS) {
+			printf("Error, Fail to process convert char to hex.\n");
+			goto err_gsm7_data;
+		}
+
+		packed_data = (byte *)malloc(str_len);
+	    memset(packed_data, '\0', str_len);
+		/* Packing Gsm 7-bit. */
+		rc = pack_gsm7_string(packed_data, str_len, gsm7_data, str_len);
+		if (rc != SUCCESS) {
+			printf("Error, Fail to process packed gsm7 chars.\n");
+			goto err_packed_data;
+		}
+
 	}
 
-#if 0
-    det_data = (char *)malloc(str_len * sizeof(char));
-    memset(det_data, '\0', str_len);
+	return SUCCESS;
 
-    printf("Info, string len is:%d, string is:%s.\n", str_len, src_data);
-    rc = convert_char_to_hex(src_data, str_len, det_data, str_len);
-    if (rc != SUCCESS) {
-        printf("Error, Fail to process convert char to hex.\n");
-        return FAIL;
-    }
-
-    printf("Info, det string len is:%d, string is:%s.\n", (int)strlen(det_data), det_data);
-    gsm7_data = (byte *)malloc(strlen(det_data) * sizeof(byte));
-    memset(gsm7_data, '\0', strlen(det_data));
-    rc = convert_iso8859_to_gsm7(det_data, strlen(det_data), gsm7_data, strlen(det_data), &gsm7_char_num);
-    if (rc != SUCCESS) {
-        printf("Error, Fail to process convert char to hex.\n");
-        return FAIL;
-    }
-
-    printf("Info, gsm7 string len is:%d, string is:%s.\n", (int)strlen(det_data), gsm7_data);
-    packed_data = (byte *)malloc(strlen(gsm7_data));
-    memset(packed_data, '\0', strlen(gsm7_data));
-    rc = pack_gsm7_string(packed_data, strlen(packed_data), gsm7_data, strlen(gsm7_data));
-    if (rc != SUCCESS) {
-        printf("Error, Fail to process packed gsm7 chars.\n");
-        return FAIL;
-    }
-
-    unpacked_data = (byte *)malloc(strlen(packed_data));
-    memset(unpacked_data, '\0', strlen(packed_data));
-    rc = unpack_gsm7_string(unpacked_data, strlen(unpacked_data), packed_data, strlen(packed_data));
-    if (rc != SUCCESS) {
-        printf("Error, Fail to process unpacked gsm7 chars.\n");
-        return FAIL;
-    }
-
-    free(unpacked_data);
-    free(gsm7_data);
-    free(det_data);
-#endif
-    return SUCCESS;
+err_packed_data:
+	free(packed_data);
+err_gsm7_data:
+	free(gsm7_data);
+err_hex_data:
+	free(hex_data);
+err:
+	return FAIL;
 }

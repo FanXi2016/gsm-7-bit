@@ -1,14 +1,16 @@
-#h_source += convert_char_2_hex_data.h
-#c_source += convert_char_2_hex_data.c
+CFLAGS = -Isrc -Iinc -O2
 
-objs = convert_char_2_hex_data.o
+objs = src/main.o \
+       src/convert_char_2_hex.o \
+       src/convert_iso8859_2_gsm7.o \
+       src/gsm7_packing_unpacking.o
 
 all: $(objs)
-	gcc -o gsm_7bit $(objs)
+	$(CC) -o Gsm_7bit_Tools $(objs) $(CFLAGS)
 
-convert_char_2_hex_data.o: convert_char_2_hex_data.c convert_char_2_hex_data.h
-	cc -c convert_char_2_hex_data.c
+$(objs):%o:%c
+	$(CC) -c $(CFLAGS) $< -o $@
 
 .PHONY: clean
 clean:
-	rm -rf gsm_7bit *.o
+	$(RM) Gsm_7bit_Tools $(objs)

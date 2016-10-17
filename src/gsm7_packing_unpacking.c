@@ -28,7 +28,7 @@
   None.
 */
 /*=========================================================================*/
-int pack_gsm7_string(byte *packed_str, int size_packed_str, byte *gsm7_str, int size_gsm7_str)
+int pack_gsm7_string(byte *packed_str, u_int size_packed_str, byte *gsm7_str, u_int size_gsm7_str)
 {
     int packed_idx = 0;
     int gsm7_idx = 0;
